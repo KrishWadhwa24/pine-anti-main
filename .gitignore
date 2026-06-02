@@ -3,4 +3,6 @@ backend/.env
 .env
 clean_emojis.js
 backend/.env.example
+.gitignorebackend/.env
+*.env
 .gitignore
