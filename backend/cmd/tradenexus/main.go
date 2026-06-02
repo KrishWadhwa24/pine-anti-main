@@ -317,8 +317,23 @@ func (sr *StrategyRunnerImpl) WarmAndReplayRecent(ctx context.Context, stocks []
 				continue
 			}
 
-			sr.indicatorMgr.ResetState(stock.Token, tf)
+			var snapshotValid bool
+			state, err := sr.indicatorMgr.LoadSnapshot(ctx, stock.Token, tf)
+			if err == nil && state != nil && !state.LastCandleTimestamp.IsZero() {
+				// Snapshot is valid if it bridges the oldest fetched candle (no gap)
+				if !state.LastCandleTimestamp.Before(candles[0].Timestamp) {
+					snapshotValid = true
+				}
+			}
+
+			if !snapshotValid {
+				sr.indicatorMgr.ResetState(stock.Token, tf)
+			}
+
 			for _, c := range candles {
+				if snapshotValid && !c.Timestamp.After(state.LastCandleTimestamp) {
+					continue
+				}
 				sr.processStrategyCandle(ctx, c, alertFrom)
 				if !c.Timestamp.Before(alertFrom) {
 					replayed++
