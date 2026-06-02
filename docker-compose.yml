@@ -1,0 +1,25 @@
+services:
+  mongodb:
+    image: mongo:7
+    container_name: tradenexus-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    environment:
+      MONGO_INITDB_DATABASE: tradenexus
+
+  redis:
+    image: redis:7-alpine
+    container_name: tradenexus-redis
+    restart: unless-stopped
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+
+volumes:
+  mongo_data:
+  redis_data:
